@@ -1,22 +1,26 @@
-var express = require('express');
+const express = require('express');
 const bodyParser = require('body-parser');
-var User = require('../models/user');
-var passport = require('passport');
-var authenticate = require('../authenticate');
-
-var router = express.Router();
-router.use(bodyParser.json());
+const User = require('../models/user');
+const passport = require('passport');
+const authenticate = require('../authenticate');
 
 
-/* GET users listing. */
-router.get('/', function (req, res, next) {
-  res.send('respond with a resource');
-});
+const usersRouter = express.Router();
+usersRouter.use(bodyParser.json());
 
-
+usersRouter.route('/')
+.get( authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next)=> {
+    User.find({})
+        .then((users) =>{
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json(users);
+        }, (err) => next(err))
+        .catch((err) => next(err));
+})
 // USERS/SIGN UP
 
-router.post('/signup', (req, res, next) => {
+usersRouter.post('/signup', (req, res, next) => {
   User.register(new User({ username: req.body.username }),
     req.body.password, (err, user) => {
       if (err) {
@@ -49,7 +53,7 @@ router.post('/signup', (req, res, next) => {
 
 // USERS/LOGIN 
 
-router.post('/login', passport.authenticate('local'), (req, res) => {
+usersRouter.post('/login', passport.authenticate('local'), (req, res) => {
 
   var token = authenticate.getToken({ _id: req.user._id });//going to create a token by giving a payload, which only contains the ID of the user. So, we'll say id: req.user._id. That is sufficient enough for creating the JsonWebToken. We don't want to include any other of the user's information
   res.statusCode = 200;
@@ -57,7 +61,7 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
   res.json({ success: true, token: token, status: 'You are successfully logged in!' });
 });
 
-router.get('/logout', (req, res) => {
+usersRouter.get('/logout', (req, res) => {
   if (req.session) {
     req.session.destroy();
     res.clearCookie('session-id');
@@ -70,4 +74,4 @@ router.get('/logout', (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = usersRouter;

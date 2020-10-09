@@ -3,13 +3,14 @@ const bodyParser = require('body-parser');
 const User = require('../models/user');
 const passport = require('passport');
 const authenticate = require('../authenticate');
-
+const cors = require('./cors');
 
 const usersRouter = express.Router();
 usersRouter.use(bodyParser.json());
 
 usersRouter.route('/')
-.get( authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next)=> {
+.options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
+.get(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next)=> {
     User.find({})
         .then((users) =>{
             res.statusCode = 200;
@@ -20,7 +21,8 @@ usersRouter.route('/')
 })
 // USERS/SIGN UP
 
-usersRouter.post('/signup', (req, res, next) => {
+usersRouter.post('/signup', cors.corsWithOptions,  (req, res, next) => {
+  
   User.register(new User({ username: req.body.username }),
     req.body.password, (err, user) => {
       if (err) {
@@ -53,7 +55,7 @@ usersRouter.post('/signup', (req, res, next) => {
 
 // USERS/LOGIN 
 
-usersRouter.post('/login', passport.authenticate('local'), (req, res) => {
+usersRouter.post('/login', cors.corsWithOptions, passport.authenticate('local'), (req, res) => {
 
   var token = authenticate.getToken({ _id: req.user._id });//going to create a token by giving a payload, which only contains the ID of the user. So, we'll say id: req.user._id. That is sufficient enough for creating the JsonWebToken. We don't want to include any other of the user's information
   res.statusCode = 200;

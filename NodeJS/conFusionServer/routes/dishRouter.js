@@ -5,6 +5,7 @@ const Dishes = require('../models/dishes');
 const authenticate = require('../authenticate');
 const user = require('../models/user');
 const cors = require('./cors');
+
 const dishRouter = express.Router();
 dishRouter.use(bodyParser.json());
 
@@ -51,7 +52,7 @@ dishRouter.route('/')
 //dishes id
 
 dishRouter.route('/:dishId')
-.options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
+    .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
     .get(cors.cors, (req, res, next) => {
         Dishes.findById(req.params.dishId)
             .populate('comments.author')
@@ -93,7 +94,7 @@ dishRouter.route('/:dishId')
 //dishesid comments
 
 dishRouter.route('/:dishId/comments')
-.options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
+    .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
     .get(cors.cors, (req, res, next) => {
         Dishes.findById(req.params.dishId)
             .populate('comments.author')
@@ -171,7 +172,7 @@ dishRouter.route('/:dishId/comments')
 //dishes id comments comment id
 
 dishRouter.route('/:dishId/comments/:commentId')
-.options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
+    .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
     .get(cors.cors, (req, res, next) => {
         Dishes.findById(req.params.dishId)
             .populate('comments.author')
@@ -218,11 +219,11 @@ dishRouter.route('/:dishId/comments/:commentId')
                                         res.json(dish);
                                     })
                             }, (err) => next(err));
-                    }else{
+                    } else {
                         err = new Error(' Unauthorized operation ');
                         err.status = 401;
                         return next(err);
-                    } 
+                    }
                 }
                 else if (dish == null) {
                     err = new Error('Dish ' + req.params.dishId + ' not found');
